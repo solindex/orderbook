@@ -5,6 +5,13 @@ edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+no-entrypoint = []
+test-bpf = []
+wasm = []
+debug-asserts = []
+lib = []
+
 [dependencies]
 solana-program = { git = "https://github.com/solindex/sdk.git", version = "=1.8.14" }
 bytemuck = {version = "1.7.2", features= ["derive"]}
