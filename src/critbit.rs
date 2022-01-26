@@ -9,7 +9,6 @@ use solana_program::pubkey::Pubkey;
 use std::cell::{Ref, RefMut};
 use std::convert::TryInto;
 use std::{cell::RefCell, convert::identity, rc::Rc};
-
 // A Slab contains the data for a slab header and an array of nodes of a critbit tree
 // whose leafs contain the data referencing an order of the orderbook.
 
@@ -45,7 +44,7 @@ pub struct LeafNode {
 }
 
 pub(crate) const NODE_SIZE: usize = 32;
-pub(crate) const PREE_NODE_SIZE: usize = 4;
+pub(crate) const FREE_NODE_SIZE: usize = 4;
 
 pub(crate) const NODE_TAG_SIZE: usize = 8;
 pub(crate) const SLOT_SIZE: usize = NODE_TAG_SIZE + NODE_SIZE;
@@ -184,7 +183,6 @@ struct SlabHeader {
     leaf_count: u64,
     market_address: Pubkey,
 }
-
 pub const SLAB_HEADER_LEN: usize = 97;
 pub const PADDED_SLAB_HEADER_LEN: usize = SLAB_HEADER_LEN + 7;
 
@@ -280,7 +278,7 @@ impl<'a> Slab<'a> {
                 .try_into()
                 .unwrap(),
         ))
-        .unwrap();
+            .unwrap();
         offset += NODE_TAG_SIZE;
         let node = match node_tag {
             NodeTag::Leaf => {
@@ -318,7 +316,7 @@ impl<'a> Slab<'a> {
                 .try_into()
                 .unwrap(),
         ))
-        .unwrap();
+            .unwrap();
         offset += NODE_TAG_SIZE;
         let node = match node_tag {
             NodeTag::Leaf => {
@@ -380,19 +378,19 @@ impl<'a> Slab<'a> {
 
         let key = self.header.free_list_head;
         #[cfg(feature = "debug-asserts")]
-        {
-            let node = self.get_node(key).unwrap();
+            {
+                let node = self.get_node(key).unwrap();
 
-            match node {
-                NodeRef::Free(_) => {
-                    assert!(self.header.free_list_len > 1);
-                }
-                NodeRef::LastFree(_) => {
-                    assert_eq!(self.header.free_list_len, 1);
-                }
-                _ => unreachable!(),
-            };
-        }
+                match node {
+                    NodeRef::Free(_) => {
+                        assert!(self.header.free_list_len > 1);
+                    }
+                    NodeRef::LastFree(_) => {
+                        assert_eq!(self.header.free_list_len, 1);
+                    }
+                    _ => unreachable!(),
+                };
+            }
 
         let next_free_list_head = {
             let key = self.header.free_list_head;
@@ -436,7 +434,7 @@ impl<'a> Slab<'a> {
                 .try_into()
                 .unwrap(),
         ))
-        .unwrap();
+            .unwrap();
         if old_tag == NodeTag::Leaf {
             let callback_info_index = self
                 .get_node(key)
@@ -622,7 +620,7 @@ impl<'a> Slab<'a> {
             }
 
             if let Some(NodeRefMut::Inner(mut i)) =
-                parent_node.map(|k| self.get_node_mut(k).unwrap())
+            parent_node.map(|k| self.get_node_mut(k).unwrap())
             {
                 i.children[previous_critbit.unwrap() as usize] = new_root_node_handle;
             }
